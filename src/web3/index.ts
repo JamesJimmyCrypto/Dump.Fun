@@ -1,22 +1,56 @@
 import { Metaplex } from "@metaplex-foundation/js";
-import { getConnection } from "./utils";
+import { getConnection, keyPairFromB58 } from "./utils";
 import { Metadata } from "@metaplex-foundation/mpl-token-metadata";
 import { PublicKey } from "@solana/web3.js";
-import { createPumpBuyInstruction, getAccountData, getBondingCurve } from "./config";
+import { createPumpBuyInstruction, createPumpSellInstruction, getAccountData, getBondingCurve, signAndConfirmTransaction } from "./config";
+import { TOKEN_PROGRAM_ID } from "./constants";
+import { config } from "dotenv"
+import { getAssociatedTokenAddress } from "@solana/spl-token";
 
-// export const buy = async (mint: PublicKey, buyAmount: bigint, tokenOut: bigint,) => {
-//     const { bondingCurve, associatedBondingCurve } = await getBondingCurve(mint)
-//     const tx = await createPumpBuyInstruction(
-//         mint,
-//         bondingCurve,
-//         associatedBondingCurve,
-//         buyAmount,
-//         tokenOut
-//     )
-// }
+config()
 
-export const sell = () => {
+export const buy = async (mint: PublicKey, buyAmount: bigint, tokenOut: bigint) => {
+    const connection = getConnection()
 
+    const payer = keyPairFromB58(process.env.SECRET_KEY!)
+    const taDestination = await getAssociatedTokenAddress(mint, payer.publicKey)
+
+    const { bondingCurve, associatedBondingCurve } = await getBondingCurve(mint)
+
+    const tx = createPumpBuyInstruction(
+        mint,
+        bondingCurve,
+        associatedBondingCurve,
+        taDestination,
+        payer,
+        buyAmount,
+        tokenOut,
+        TOKEN_PROGRAM_ID
+    )
+
+    return await signAndConfirmTransaction(connection, payer, [tx])
+}
+
+export const sell = async (mint: PublicKey, amount: bigint, minSolOut: bigint) => {
+    const connection = getConnection()
+
+    const payer = keyPairFromB58(process.env.SECRET_KEY!)
+    const taDestination = await getAssociatedTokenAddress(mint, payer.publicKey)
+
+    const { bondingCurve, associatedBondingCurve } = await getBondingCurve(mint)
+
+    const tx = createPumpSellInstruction(
+        mint,
+        bondingCurve,
+        associatedBondingCurve,
+        taDestination,
+        payer,
+        minSolOut,
+        amount,
+        TOKEN_PROGRAM_ID
+    )
+
+    return await signAndConfirmTransaction(connection, payer, [tx])
 }
 
 export const getTokenInfo = async (mint: PublicKey) => {

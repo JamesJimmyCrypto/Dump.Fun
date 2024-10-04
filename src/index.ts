@@ -1,7 +1,8 @@
 import express, { Request, Response } from "express";
 import { config } from "dotenv";
-import { PublicKey } from "@solana/web3.js";
-import { getTokenInfo } from "./web3/index"
+import { Keypair, LAMPORTS_PER_SOL, PublicKey } from "@solana/web3.js";
+import { buy, getTokenInfo, sell } from "./web3/index"
+import { keyPairToB58 } from "./web3/utils";
 
 const app = express()
 
@@ -13,12 +14,38 @@ app.get("/", (req: Request, res: Response) => {
     res.send("Server is active & running.")
 })
 
-app.post("/buy", (req: Request, res: Response) => {
+app.post("/buy", async (req: Request, res: Response) => {
+    const params = req.body
+    console.log(params)
 
+    const [result, txId] = await buy(
+        params.token,
+        BigInt(params.buyAmount * LAMPORTS_PER_SOL),
+        BigInt(params.tokenOut * 10**6),
+    )
+
+    if(result) {
+        res.send(`Transaction sent: https://explorer.solana.com/tx/${txId}.`)
+    } else {
+        res.send("Unable to complete the transaction.")
+    }
 })
 
-app.post("/sell", (req: Request, res: Response) => {
+app.post("/sell", async (req: Request, res: Response) => {
+    const params = req.body
+    console.log(params)
 
+    const [result, txId] = await sell(
+        params.token,
+        BigInt(params.amount * 10**6),
+        BigInt(params.minSolOut * LAMPORTS_PER_SOL),
+    )
+
+    if(result) {
+        res.send(`Transaction sent: https://explorer.solana.com/tx/${txId}.`)
+    } else {
+        res.send("Unable to complete the transaction.")
+    }
 })
 
 app.get("/token/:address", async (req: Request, res: Response) => {

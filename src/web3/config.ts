@@ -49,7 +49,7 @@ export function createPumpBuyInstruction(
     payer: Keypair,
     buyAmount: bigint,
     tokenOut: bigint,
-    programId: PublicKey
+    programId = TOKEN_PROGRAM_ID
 ): TransactionInstruction {
     const keys: AccountMeta[] = [
         // Account 1
