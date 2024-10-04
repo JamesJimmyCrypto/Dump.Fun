@@ -6,6 +6,7 @@ import { RENT_PROGRAM_ID, TOKEN_PROGRAM_ID as RAYDIUM_TOKEN_PROGRAM_ID } from "@
 
 export const getAccountData = async (connection: Connection, address: PublicKey) => {
     const accountInfo = await connection.getAccountInfo(address)
+    console.log(accountInfo)
 
     return accountInfo?.data
 }
