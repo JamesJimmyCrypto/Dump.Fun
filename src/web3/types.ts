@@ -9,3 +9,12 @@ export interface PumpFunSellInstructionData {
     amount: bigint,
     minSolOutput: bigint
 }
+
+export interface BondingCurve {
+    virtualTokenReserves: bigint,
+    virtualSolReserves: bigint,
+    realTokenReserves: bigint,
+    realSolReserves: bigint,
+    tokenTotalSupply: bigint,
+    complete: boolean
+}

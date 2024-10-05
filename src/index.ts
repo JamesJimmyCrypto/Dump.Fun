@@ -32,8 +32,7 @@ app.post("/buy", async (req: Request, res: Response) => {
 
     const [result, txId] = await buy(
         new PublicKey(params.token),
-        params.buyAmount,
-        params.tokenOut
+        params.buyAmount
     )
 
     if(result) {
@@ -49,8 +48,7 @@ app.post("/sell", async (req: Request, res: Response) => {
 
     const [result, txId] = await sell(
         new PublicKey(params.token),
-        params.amount,
-        params.minSolOut
+        params.amount
     )
 
     if(result) {

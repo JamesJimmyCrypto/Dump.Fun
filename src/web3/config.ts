@@ -1,7 +1,7 @@
 import { ASSOCIATED_TOKEN_PROGRAM_ID, AccountLayout, getAssociatedTokenAddress } from "@solana/spl-token";
-import { AccountMeta, Connection, Keypair, PublicKey, SystemProgram, TransactionInstruction, TransactionMessage, VersionedTransaction } from "@solana/web3.js";
+import { AccountMeta, Connection, Keypair, LAMPORTS_PER_SOL, PublicKey, SystemProgram, TransactionInstruction, TransactionMessage, VersionedTransaction } from "@solana/web3.js";
 import { EVENT_AUTHORITY, FEE_RECIPIENT, GLOBAL, PumpFunInstruction, TOKEN_PROGRAM_ID } from "./constants";
-import { PumpFunBuyInstructionLayout, PumpFunSellInstructionLayout } from "./layout";
+import { BondingCurveLayout, PumpFunBuyInstructionLayout, PumpFunSellInstructionLayout } from "./layout";
 import { RENT_PROGRAM_ID, TOKEN_PROGRAM_ID as RAYDIUM_TOKEN_PROGRAM_ID } from "@raydium-io/raydium-sdk";
 
 export const getAccountData = async (connection: Connection, address: PublicKey) => {
@@ -38,6 +38,15 @@ export const getBondingCurve = async (mint: PublicKey) => {
     const associatedBondingCurve = await getAssociatedTokenAddress(mint, bondingCurve, true)
 
     return { bondingCurve, associatedBondingCurve }
+}
+
+export const calculate_price_from_bonding_curve = async (connection: Connection, bondingCurve: PublicKey, decimals: number) => {
+    const bondingCurveAccount = await getAccountData(connection, bondingCurve)
+    const bondingCurveData = BondingCurveLayout.decode(bondingCurveAccount!)
+
+    const price = (Number(bondingCurveData.virtualSolReserves) / LAMPORTS_PER_SOL) / (Number(bondingCurveData.virtualTokenReserves) / 10**decimals)
+
+    return price
 }
 
 export function createPumpBuyInstruction(
@@ -138,24 +147,29 @@ export function createPumpSellInstruction(
 
 export const signAndConfirmTransaction = async (connection: Connection, keyPair: Keypair, instructions: TransactionInstruction[]) => {
     const latestBlockHash = await connection.getLatestBlockhash('confirmed')
+    console.log(latestBlockHash)
 
     const messageV0 = new TransactionMessage({
         payerKey: keyPair.publicKey,
         recentBlockhash: latestBlockHash.blockhash,
         instructions: instructions
     }).compileToV0Message()
+    console.log(messageV0)
 
     const transaction = new VersionedTransaction(messageV0)
+    console.log(transaction)
 
     transaction.sign([keyPair])
 
     const txId = await connection.sendTransaction(transaction, { maxRetries: 5 })
+    console.log(txId)
 
     const confirmation = await connection.confirmTransaction({
         signature: txId,
         blockhash: latestBlockHash.blockhash,
         lastValidBlockHeight: latestBlockHash.lastValidBlockHeight
     })
+    console.log(confirmation)
 
     if (confirmation.value.err) {
         return [false, ""]

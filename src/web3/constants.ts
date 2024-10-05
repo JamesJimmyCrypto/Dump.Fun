@@ -1,4 +1,4 @@
-import { PublicKey } from "@solana/web3.js";
+import { ComputeBudgetProgram, PublicKey } from "@solana/web3.js";
 
 export const GLOBAL = new PublicKey('4wTV1YmiEkRvAtNtsSGPtUrqRYQMe5SKy2uB4Jjaxnjf')
 export const FEE_RECIPIENT = new PublicKey('CebN5WGQ4jvEPvsVU4EoHEpgzq1VV7AbicfhtW4xC9iM');
@@ -8,6 +8,10 @@ export const MINT_AUTHORITY = new PublicKey('TSLvdd1pWpHVjahSpsvCXUbgwsL3JAcvokw
 export const EVENT_AUTHORITY = new PublicKey('Ce6TQqeHC9p8KetsN6JsjHK7UTZk7nasjjnr7XxXp9F1')
 
 export const SLIPPAGE = 0.3
+
+export const PRIORITY_RATE = 25000
+
+export const PRIORITY_FEE_INSTRUCTION = ComputeBudgetProgram.setComputeUnitPrice({ microLamports: PRIORITY_RATE })
 
 export const PumpFunInstruction = {
     Buy: 16927863322537952870n,
