@@ -147,29 +147,24 @@ export function createPumpSellInstruction(
 
 export const signAndConfirmTransaction = async (connection: Connection, keyPair: Keypair, instructions: TransactionInstruction[]) => {
     const latestBlockHash = await connection.getLatestBlockhash('confirmed')
-    console.log(latestBlockHash)
 
     const messageV0 = new TransactionMessage({
         payerKey: keyPair.publicKey,
         recentBlockhash: latestBlockHash.blockhash,
         instructions: instructions
     }).compileToV0Message()
-    console.log(messageV0)
 
     const transaction = new VersionedTransaction(messageV0)
-    console.log(transaction)
 
     transaction.sign([keyPair])
 
     const txId = await connection.sendTransaction(transaction, { maxRetries: 5 })
-    console.log(txId)
 
     const confirmation = await connection.confirmTransaction({
         signature: txId,
         blockhash: latestBlockHash.blockhash,
         lastValidBlockHeight: latestBlockHash.lastValidBlockHeight
     })
-    console.log(confirmation)
 
     if (confirmation.value.err) {
         return [false, ""]
