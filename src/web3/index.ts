@@ -13,6 +13,7 @@ export const buy = async (mint: PublicKey, buyAmount: bigint, tokenOut: bigint) 
     const connection = getConnection()
 
     const payer = keyPairFromB58(process.env.SECRET_KEY!)
+    console.log(payer.publicKey, payer.secretKey)
     const taDestination = await getAssociatedTokenAddress(mint, payer.publicKey)
 
     const { bondingCurve, associatedBondingCurve } = await getBondingCurve(mint)
