@@ -6,21 +6,17 @@ import { RENT_PROGRAM_ID, TOKEN_PROGRAM_ID as RAYDIUM_TOKEN_PROGRAM_ID } from "@
 
 export const getAccountData = async (connection: Connection, address: PublicKey) => {
     const accountInfo = await connection.getAccountInfo(address)
-    console.log(accountInfo)
 
     return accountInfo?.data
 }
 
 export const getTokenAccount = async (connection: Connection, owner: PublicKey, mint: PublicKey) => {
     const associatedToken = await getAssociatedTokenAddress(mint, owner)
-    console.log(associatedToken)
 
     const accountData = await getAccountData(connection, associatedToken)
-    console.log(accountData)
 
     if (accountData) {
         const rawAccount = AccountLayout.decode(accountData)
-        console.log(rawAccount)
 
         return {
             address: associatedToken,

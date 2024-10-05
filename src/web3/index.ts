@@ -18,6 +18,9 @@ export const buy = async (mint: PublicKey, buyAmount: number, tokenOut: number) 
     const balance = await connection.getBalance(payer.publicKey)
     console.log(balance)
 
+    const token = await getTokenInfo(mint)
+    console.log(token)
+
     if((balance / LAMPORTS_PER_SOL) > buyAmount) {
         const taDestination = await getAssociatedTokenAddress(mint, payer.publicKey)
         console.log(taDestination)
@@ -32,9 +35,10 @@ export const buy = async (mint: PublicKey, buyAmount: number, tokenOut: number) 
             taDestination,
             payer,
             BigInt(buyAmount * LAMPORTS_PER_SOL),
-            BigInt(tokenOut * 10**6),
+            BigInt(tokenOut * 10**token.decimals!),
             TOKEN_PROGRAM_ID
         )
+        console.log(tx)
 
         return await signAndConfirmTransaction(connection, payer, [tx])
     } else {
@@ -54,24 +58,32 @@ export const sell = async (mint: PublicKey, amount: number, minSolOut: number) =
     const tokenAccount = await getTokenAccount(connection, payer.publicKey, mint)
     console.log(tokenAccount)
 
-    const taDestination = await getAssociatedTokenAddress(mint, payer.publicKey)
-    console.log(taDestination)
+    const token = await getTokenInfo(mint)
+    console.log(token)
 
-    const { bondingCurve, associatedBondingCurve } = await getBondingCurve(mint)
-    console.log(bondingCurve, associatedBondingCurve)
+    if((amount * 10**token.decimals!) <= Number(tokenAccount?.amount)) {
+        const taDestination = await getAssociatedTokenAddress(mint, payer.publicKey)
+        console.log(taDestination)
 
-    const tx = createPumpSellInstruction(
-        mint,
-        bondingCurve,
-        associatedBondingCurve,
-        taDestination,
-        payer,
-        BigInt(minSolOut * LAMPORTS_PER_SOL),
-        BigInt(amount * 10**6),
-        TOKEN_PROGRAM_ID
-    )
+        const { bondingCurve, associatedBondingCurve } = await getBondingCurve(mint)
+        console.log(bondingCurve, associatedBondingCurve)
 
-    return await signAndConfirmTransaction(connection, payer, [tx])
+        const tx = createPumpSellInstruction(
+            mint,
+            bondingCurve,
+            associatedBondingCurve,
+            taDestination,
+            payer,
+            BigInt(minSolOut * LAMPORTS_PER_SOL),
+            BigInt(amount * 10**token.decimals!),
+            TOKEN_PROGRAM_ID
+        )
+        console.log(tx)
+
+        return await signAndConfirmTransaction(connection, payer, [tx])
+    } else {
+        return [false, ""]
+    }
 }
 
 export const getTokenInfo = async (mint: PublicKey) => {
@@ -84,13 +96,21 @@ export const getTokenInfo = async (mint: PublicKey) => {
 
     if(metadataAccountData) {
         const token = await metaplex.nfts().findByMint({ mintAddress: mint })
+        console.log(token)
 
         return {
             name: token.name,
             symbol: token.symbol,
+            decimals: token.mint?.decimals,
             logo: token.json?.image
         }
     } else {
-        return "Token does not support Metaplex metadata hence token details cannot be provided."
+        return {
+            name: undefined,
+            symbol: undefined,
+            decimals: undefined,
+            logo: undefined,
+            msg: "Token does not support Metaplex metadata hence token details cannot be provided."
+        }
     }
 }
