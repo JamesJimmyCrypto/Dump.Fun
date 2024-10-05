@@ -31,9 +31,9 @@ app.post("/buy", async (req: Request, res: Response) => {
     console.log(params)
 
     const [result, txId] = await buy(
-        params.token,
-        BigInt(params.buyAmount * LAMPORTS_PER_SOL),
-        BigInt(params.tokenOut * 10**6),
+        new PublicKey(params.token),
+        params.buyAmount,
+        params.tokenOut
     )
 
     if(result) {
@@ -48,9 +48,9 @@ app.post("/sell", async (req: Request, res: Response) => {
     console.log(params)
 
     const [result, txId] = await sell(
-        params.token,
-        BigInt(params.amount * 10**6),
-        BigInt(params.minSolOut * LAMPORTS_PER_SOL),
+        new PublicKey(params.token),
+        params.amount,
+        params.minSolOut
     )
 
     if(result) {

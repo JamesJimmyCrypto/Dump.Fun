@@ -1,44 +1,64 @@
 import { Metaplex } from "@metaplex-foundation/js";
 import { getConnection, keyPairFromB58 } from "./utils";
 import { Metadata } from "@metaplex-foundation/mpl-token-metadata";
-import { PublicKey } from "@solana/web3.js";
-import { createPumpBuyInstruction, createPumpSellInstruction, getAccountData, getBondingCurve, signAndConfirmTransaction } from "./config";
+import { LAMPORTS_PER_SOL, PublicKey } from "@solana/web3.js";
+import { createPumpBuyInstruction, createPumpSellInstruction, getAccountData, getBondingCurve, getTokenAccount, signAndConfirmTransaction } from "./config";
 import { TOKEN_PROGRAM_ID } from "./constants";
 import { config } from "dotenv"
 import { getAssociatedTokenAddress } from "@solana/spl-token";
 
 config()
 
-export const buy = async (mint: PublicKey, buyAmount: bigint, tokenOut: bigint) => {
+export const buy = async (mint: PublicKey, buyAmount: number, tokenOut: number) => {
     const connection = getConnection()
 
     const payer = keyPairFromB58(process.env.SECRET_KEY!)
     console.log(payer.publicKey, payer.secretKey)
-    const taDestination = await getAssociatedTokenAddress(mint, payer.publicKey)
 
-    const { bondingCurve, associatedBondingCurve } = await getBondingCurve(mint)
+    const balance = await connection.getBalance(payer.publicKey)
+    console.log(balance)
 
-    const tx = createPumpBuyInstruction(
-        mint,
-        bondingCurve,
-        associatedBondingCurve,
-        taDestination,
-        payer,
-        buyAmount,
-        tokenOut,
-        TOKEN_PROGRAM_ID
-    )
+    if((balance / LAMPORTS_PER_SOL) > buyAmount) {
+        const taDestination = await getAssociatedTokenAddress(mint, payer.publicKey)
+        console.log(taDestination)
 
-    return await signAndConfirmTransaction(connection, payer, [tx])
+        const { bondingCurve, associatedBondingCurve } = await getBondingCurve(mint)
+        console.log(bondingCurve, associatedBondingCurve)
+
+        const tx = createPumpBuyInstruction(
+            mint,
+            bondingCurve,
+            associatedBondingCurve,
+            taDestination,
+            payer,
+            BigInt(buyAmount * LAMPORTS_PER_SOL),
+            BigInt(tokenOut * 10**6),
+            TOKEN_PROGRAM_ID
+        )
+
+        return await signAndConfirmTransaction(connection, payer, [tx])
+    } else {
+        return [false, ""]
+    }
 }
 
-export const sell = async (mint: PublicKey, amount: bigint, minSolOut: bigint) => {
+export const sell = async (mint: PublicKey, amount: number, minSolOut: number) => {
     const connection = getConnection()
 
     const payer = keyPairFromB58(process.env.SECRET_KEY!)
+    console.log(payer.publicKey, payer.secretKey)
+
+    const balance = await connection.getBalance(payer.publicKey)
+    console.log(balance)
+
+    const tokenAccount = await getTokenAccount(connection, payer.publicKey, mint)
+    console.log(tokenAccount)
+
     const taDestination = await getAssociatedTokenAddress(mint, payer.publicKey)
+    console.log(taDestination)
 
     const { bondingCurve, associatedBondingCurve } = await getBondingCurve(mint)
+    console.log(bondingCurve, associatedBondingCurve)
 
     const tx = createPumpSellInstruction(
         mint,
@@ -46,8 +66,8 @@ export const sell = async (mint: PublicKey, amount: bigint, minSolOut: bigint) =
         associatedBondingCurve,
         taDestination,
         payer,
-        minSolOut,
-        amount,
+        BigInt(minSolOut * LAMPORTS_PER_SOL),
+        BigInt(amount * 10**6),
         TOKEN_PROGRAM_ID
     )
 
