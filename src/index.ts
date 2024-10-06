@@ -32,7 +32,7 @@ app.post("/buy", async (req: Request, res: Response) => {
 
     const [result, txId] = await buy(
         new PublicKey(params.token),
-        params.buyAmount
+        params.amount
     )
 
     if(result) {
