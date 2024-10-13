@@ -1,38 +1,4 @@
-import { PublicKey } from "@solana/web3.js"
-
-export interface PumpFunBuyInstructionData {
-    instruction: bigint,
-    tokenOut: bigint,
-    maxSolCost: bigint
-}
-
-export interface PumpFunSellInstructionData {
-    instruction: bigint,
-    amount: bigint,
-    minSolOutput: bigint
-}
-
-export interface BondingCurve {
-    virtualTokenReserves: bigint,
-    virtualSolReserves: bigint,
-    realTokenReserves: bigint,
-    realSolReserves: bigint,
-    tokenTotalSupply: bigint,
-    complete: boolean
-}
-
-export interface TradeEvent {
-    mint: PublicKey,
-    solAmount: bigint,
-    tokenAmount: bigint,
-    isBuy: boolean,
-    user: PublicKey,
-    timestamp: bigint,
-    virtualSolReserves: bigint,
-    virtualTokenReserves: bigint
-}
-
-export type Pump_Fun_Idl = {
+{
     "version": "0.1.0",
     "name": "pump",
     "instructions": [

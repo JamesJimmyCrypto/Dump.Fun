@@ -3,9 +3,15 @@ import { getConnection, keyPairFromB58 } from "./utils";
 import { Metadata } from "@metaplex-foundation/mpl-token-metadata";
 import { LAMPORTS_PER_SOL, PublicKey } from "@solana/web3.js";
 import { calculate_price_from_bonding_curve, createPumpBuyInstruction, createPumpSellInstruction, getAccountData, getBondingCurve, getTokenAccount, signAndConfirmTransaction } from "./config";
-import { PRIORITY_FEE_INSTRUCTION, TOKEN_PROGRAM_ID } from "./constants";
+import { EVENT_AUTHORITY, PRIORITY_FEE_INSTRUCTION, TOKEN_PROGRAM_ID } from "./constants";
 import { config } from "dotenv"
 import { getAssociatedTokenAddress, getOrCreateAssociatedTokenAccount } from "@solana/spl-token";
+import { TradeEventLayout } from "./layout";
+import PUMP_FUN_IDL from "./pump-fun.json";
+import { Program, AnchorProvider, Idl, Wallet } from "@coral-xyz/anchor";
+import { Pump_Fun_Idl } from "./types";
+import { tokenExists } from "../db/utils"
+import { createToken, updateToken } from "../db";
 
 config()
 
@@ -113,8 +119,9 @@ export const getTokenInfo = async (mint: PublicKey) => {
         return {
             name: token.name,
             symbol: token.symbol,
+            description: token.json?.description,
             decimals: token.mint?.decimals,
-            logo: token.json?.image
+            image_uri: token.json?.image
         }
     } else {
         return {
@@ -125,4 +132,30 @@ export const getTokenInfo = async (mint: PublicKey) => {
             msg: "Token does not support Metaplex metadata hence token details cannot be provided."
         }
     }
+}
+
+export const indexer = async () => {
+    const connection = getConnection()
+
+    const keyPair = keyPairFromB58(`${process.env.SECRET_KEY}`)
+    const wallet = new Wallet(keyPair)
+
+    const provider = new AnchorProvider(connection, wallet, { commitment: "confirmed" })
+    const address = "6EF8rrecthR5Dkzon8Nwu78hRvfCKubJ14M5uBEwF6P"
+
+    const program = new Program<Pump_Fun_Idl>(PUMP_FUN_IDL as unknown as Pump_Fun_Idl, address, provider)
+    console.log(program)
+
+    program.addEventListener("TradeEvent", async (e, slot, sig) => {
+        const exists = await tokenExists(e.mint.toString())
+        console.log(exists, e, slot, sig)
+
+        if(exists) {
+            const token = await updateToken(e.mint.toString())
+            console.log(token)
+        } else {
+            const token = await createToken(e.mint.toString())
+            console.log(token)
+        }
+    })
 }

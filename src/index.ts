@@ -1,8 +1,11 @@
 import express, { Request, Response } from "express";
 import { config } from "dotenv";
 import { Keypair, LAMPORTS_PER_SOL, PublicKey } from "@solana/web3.js";
-import { buy, getTokenInfo, sell } from "./web3/index"
-import { keyPairToB58 } from "./web3/utils";
+import { buy, getTokenInfo, indexer, sell } from "./web3/index"
+import { getSolPriceInUSD, keyPairToB58 } from "./web3/utils";
+import { connectDB } from "./db/utils";
+
+connectDB()
 
 const app = express()
 
@@ -10,7 +13,7 @@ config()
 
 app.use(express.json())
 
-app.get("/", (req: Request, res: Response) => {
+app.get("/", async (req: Request, res: Response) => {
     // const secret = Uint8Array.from([
     //     202, 171, 192, 129, 150, 189, 204, 241, 142, 71, 205, 2, 81, 97, 2, 176, 48,
     //     81, 45, 1, 96, 138, 220, 132, 231, 131, 120, 77, 66, 40, 97, 172, 91, 245, 84,
@@ -22,6 +25,9 @@ app.get("/", (req: Request, res: Response) => {
 
     // const encodedSecret = keyPairToB58(keypair)
     // console.log(encodedSecret)
+
+    const price = await getSolPriceInUSD()
+    console.log(price)
 
     res.send("Server is active & running.")
 })
@@ -68,6 +74,8 @@ app.get("/token/:address", async (req: Request, res: Response) => {
 
     res.send(tokenInfo)
 })
+
+indexer()
 
 app.listen(process.env.PORT, () => {
     console.log(`Server is running on http://localhost:${process.env.PORT}.`)

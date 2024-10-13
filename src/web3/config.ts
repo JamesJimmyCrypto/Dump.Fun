@@ -3,6 +3,7 @@ import { AccountMeta, Connection, Keypair, LAMPORTS_PER_SOL, PublicKey, SystemPr
 import { EVENT_AUTHORITY, FEE_RECIPIENT, GLOBAL, PumpFunInstruction, TOKEN_PROGRAM_ID } from "./constants";
 import { BondingCurveLayout, PumpFunBuyInstructionLayout, PumpFunSellInstructionLayout } from "./layout";
 import { RENT_PROGRAM_ID, TOKEN_PROGRAM_ID as RAYDIUM_TOKEN_PROGRAM_ID } from "@raydium-io/raydium-sdk";
+import { getSolPriceInUSD } from "./utils";
 
 export const getAccountData = async (connection: Connection, address: PublicKey) => {
     const accountInfo = await connection.getAccountInfo(address)
@@ -40,13 +41,40 @@ export const getBondingCurve = async (mint: PublicKey) => {
     return { bondingCurve, associatedBondingCurve }
 }
 
-export const calculate_price_from_bonding_curve = async (connection: Connection, bondingCurve: PublicKey, decimals: number) => {
+export const getBondingCurveData = async (connection: Connection, bondingCurve: PublicKey) => {
     const bondingCurveAccount = await getAccountData(connection, bondingCurve)
     const bondingCurveData = BondingCurveLayout.decode(bondingCurveAccount!)
+
+    return bondingCurveData
+}
+
+export const calculate_price_from_bonding_curve = async (connection: Connection, bondingCurve: PublicKey, decimals: number) => {
+    const bondingCurveData = await getBondingCurveData(connection, bondingCurve)
 
     const price = (Number(bondingCurveData.virtualSolReserves) / LAMPORTS_PER_SOL) / (Number(bondingCurveData.virtualTokenReserves) / 10**decimals)
 
     return price
+}
+
+export const calculate_mcap_in_sol_from_bonding_curve = async (connection: Connection, bondingCurve: PublicKey, decimals: number) => {
+    const bondingCurveData = await getBondingCurveData(connection, bondingCurve)
+
+    const price = (Number(bondingCurveData.virtualTokenReserves) / 10**decimals) / (Number(bondingCurveData.virtualSolReserves) / LAMPORTS_PER_SOL)
+
+    const mcap = price * Number(bondingCurveData.tokenTotalSupply)
+
+    return mcap
+}
+
+export const calculate_mcap_in_usd_from_bonding_curve = async (connection: Connection, bondingCurve: PublicKey, decimals: number) => {
+    const bondingCurveData = await getBondingCurveData(connection, bondingCurve)
+    const sol_price = await getSolPriceInUSD()
+
+    const price = (Number(bondingCurveData.virtualTokenReserves) / 10**decimals) / (Number(bondingCurveData.virtualSolReserves) / LAMPORTS_PER_SOL)
+
+    const mcap = price * Number(bondingCurveData.tokenTotalSupply) * sol_price
+
+    return mcap
 }
 
 export function createPumpBuyInstruction(

@@ -1,6 +1,6 @@
 import { struct, u8 } from '@solana/buffer-layout';
 import { publicKey, u64, bool } from '@solana/buffer-layout-utils';
-import { BondingCurve, PumpFunBuyInstructionData, PumpFunSellInstructionData } from './types';
+import { BondingCurve, PumpFunBuyInstructionData, PumpFunSellInstructionData, TradeEvent } from './types';
 
 export const PumpFunBuyInstructionLayout = struct<PumpFunBuyInstructionData>([
     u64('instruction'),
@@ -21,4 +21,15 @@ export const BondingCurveLayout = struct<BondingCurve>([
     u64('realSolReserves'),
     u64('tokenTotalSupply'),
     bool('complete')
+])
+
+export const TradeEventLayout = struct<TradeEvent>([
+    publicKey("mint"),
+    u64("solAmount"),
+    u64("tokenAmount"),
+    bool("isBuy"),
+    publicKey("user"),
+    u64("timestamp"),
+    u64("virtualSolReserves"),
+    u64("virtualTokenReserves")
 ])
