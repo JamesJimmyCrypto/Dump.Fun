@@ -61,7 +61,7 @@ export const calculate_mcap_in_sol_from_bonding_curve = async (connection: Conne
 
     const price = (Number(bondingCurveData.virtualTokenReserves) / 10**decimals) / (Number(bondingCurveData.virtualSolReserves) / LAMPORTS_PER_SOL)
 
-    const mcap = price * Number(bondingCurveData.tokenTotalSupply)
+    const mcap = price * (Number(bondingCurveData.tokenTotalSupply) / (10**decimals))
 
     return mcap
 }
@@ -72,7 +72,7 @@ export const calculate_mcap_in_usd_from_bonding_curve = async (connection: Conne
 
     const price = (Number(bondingCurveData.virtualTokenReserves) / 10**decimals) / (Number(bondingCurveData.virtualSolReserves) / LAMPORTS_PER_SOL)
 
-    const mcap = price * Number(bondingCurveData.tokenTotalSupply) * sol_price
+    const mcap = price * (Number(bondingCurveData.tokenTotalSupply) / (10**decimals)) * sol_price
 
     return mcap
 }

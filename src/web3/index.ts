@@ -144,18 +144,19 @@ export const indexer = async () => {
     const address = "6EF8rrecthR5Dkzon8Nwu78hRvfCKubJ14M5uBEwF6P"
 
     const program = new Program<Pump_Fun_Idl>(PUMP_FUN_IDL as unknown as Pump_Fun_Idl, address, provider)
-    console.log(program)
 
     program.addEventListener("TradeEvent", async (e, slot, sig) => {
-        const exists = await tokenExists(e.mint.toString())
-        console.log(exists, e, slot, sig)
+        if(e.isBuy) {
+            const exists = await tokenExists(e.mint.toString())
+            console.log(exists, e, slot, sig)
 
-        if(exists) {
-            const token = await updateToken(e.mint.toString())
-            console.log(token)
-        } else {
-            const token = await createToken(e.mint.toString())
-            console.log(token)
+            if(exists) {
+                const token = await updateToken(e.mint.toString())
+                console.log(token)
+            } else {
+                const token = await createToken(e.mint.toString())
+                console.log(token)
+            }
         }
     })
 }

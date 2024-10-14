@@ -38,11 +38,11 @@ export const createToken = async (mint: string) => {
             created_at: 0,
             raydium_pool: "",
             complete: bondingCurveData.complete,
-            virtual_sol_reserves: (Number(bondingCurveData.virtualSolReserves) / LAMPORTS_PER_SOL).toLocaleString(),
-            virtual_token_reserves: (Number(bondingCurveData.virtualTokenReserves) / (10**decimals!)).toLocaleString(),
-            real_sol_reserves: (Number(bondingCurveData.realSolReserves) / LAMPORTS_PER_SOL).toLocaleString(),
-            real_token_reserves: (Number(bondingCurveData.realTokenReserves) / (10**decimals!)).toLocaleString(),
-            total_supply: (Number(bondingCurveData.tokenTotalSupply) / (10**decimals!)).toLocaleString(),
+            virtual_sol_reserves: (Number(bondingCurveData.virtualSolReserves) / LAMPORTS_PER_SOL).toFixed(2),
+            virtual_token_reserves: (Number(bondingCurveData.virtualTokenReserves) / (10**decimals!)).toFixed(2),
+            real_sol_reserves: (Number(bondingCurveData.realSolReserves) / LAMPORTS_PER_SOL).toFixed(2),
+            real_token_reserves: (Number(bondingCurveData.realTokenReserves) / (10**decimals!)).toFixed(2),
+            total_supply: (Number(bondingCurveData.tokenTotalSupply) / (10**decimals!)).toFixed(0),
             market_cap_in_sol: mcap_in_sol.toLocaleString(),
             market_cap_in_usd: mcap_in_usd.toLocaleString()
         })
@@ -79,11 +79,11 @@ export const updateToken = async (mint: string) => {
             { mint },
             { $set: { 
                 complete: bondingCurveData.complete,
-                virtual_sol_reserves: (Number(bondingCurveData.virtualSolReserves) / LAMPORTS_PER_SOL).toLocaleString(),
-                virtual_token_reserves: (Number(bondingCurveData.virtualTokenReserves) / (10**decimals!)).toLocaleString(),
-                real_sol_reserves: (Number(bondingCurveData.realSolReserves) / LAMPORTS_PER_SOL).toLocaleString(),
-                real_token_reserves: (Number(bondingCurveData.realTokenReserves) / (10**decimals!)).toLocaleString(),
-                total_supply: (Number(bondingCurveData.tokenTotalSupply) / (10**decimals!)).toLocaleString(),
+                virtual_sol_reserves: (Number(bondingCurveData.virtualSolReserves) / LAMPORTS_PER_SOL).toFixed(2),
+                virtual_token_reserves: (Number(bondingCurveData.virtualTokenReserves) / (10**decimals!)).toFixed(2),
+                real_sol_reserves: (Number(bondingCurveData.realSolReserves) / LAMPORTS_PER_SOL).toFixed(2),
+                real_token_reserves: (Number(bondingCurveData.realTokenReserves) / (10**decimals!)).toFixed(2),
+                total_supply: (Number(bondingCurveData.tokenTotalSupply) / (10**decimals!)).toFixed(0),
                 market_cap_in_sol: mcap_in_sol.toLocaleString(),
                 market_cap_in_usd: mcap_in_usd.toLocaleString()
             }}
