@@ -4,6 +4,7 @@ import { Keypair, LAMPORTS_PER_SOL, PublicKey } from "@solana/web3.js";
 import { buy, getTokenInfo, indexer, sell } from "./web3/index"
 import { getSolPriceInUSD, keyPairToB58 } from "./web3/utils";
 import { connectDB } from "./db/utils";
+import { EVENT_AUTHORITY, FEE_RECIPIENT, GLOBAL, MINT_AUTHORITY, TOKEN_PROGRAM_ID } from "./web3/constants";
 
 connectDB()
 
@@ -14,20 +15,8 @@ config()
 app.use(express.json())
 
 app.get("/", async (req: Request, res: Response) => {
-    // const secret = Uint8Array.from([
-    //     202, 171, 192, 129, 150, 189, 204, 241, 142, 71, 205, 2, 81, 97, 2, 176, 48,
-    //     81, 45, 1, 96, 138, 220, 132, 231, 131, 120, 77, 66, 40, 97, 172, 91, 245, 84,
-    //     221, 157, 190, 9, 145, 176, 130, 25, 43, 72, 107, 190, 229, 75, 88, 191, 136,
-    //     7, 167, 109, 91, 170, 164, 186, 15, 142, 36, 12, 23,
-    // ])
-    // const keypair = Keypair.fromSecretKey(secret)
-    // console.log(secret, keypair)
-
-    // const encodedSecret = keyPairToB58(keypair)
-    // console.log(encodedSecret)
-
-    const price = await getSolPriceInUSD()
-    console.log(price)
+    const isPDA = !PublicKey.isOnCurve(EVENT_AUTHORITY)
+    console.log(isPDA)
 
     res.send("Server is active & running.")
 })
